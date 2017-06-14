@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"/>
 
     <SeekBar
+        android:id="@+id/seek_progress_song"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/progress_music_margin"/>
