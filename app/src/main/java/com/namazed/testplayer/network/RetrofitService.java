@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitService {
 
-    private static final String BASE_URL = "https://www.dropbox.com/s/";
+    public static final String BASE_URL = "https://www.dropbox.com/s/";
     private final Retrofit client;
 
     public RetrofitService() {

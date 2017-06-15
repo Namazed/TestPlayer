@@ -14,14 +14,14 @@
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
         android:gravity="center"
-        android:textSize="22sp"
+        android:textSize="@dimen/size_text_of_name_song"
         tools:text="Urban creative life"/>
 
     <ProgressBar
         android:id="@+id/progress_load_music"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
+        android:visibility="invisible"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:indeterminate="true"/>
