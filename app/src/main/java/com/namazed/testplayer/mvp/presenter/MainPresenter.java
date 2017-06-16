@@ -1,18 +1,25 @@
 package com.namazed.testplayer.mvp.presenter;
 
+import android.content.Context;
+
 import com.namazed.testplayer.mvp.base.BasePresenter;
 import com.namazed.testplayer.mvp.contract.MainContract;
 import com.namazed.testplayer.network.LinksService;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
 
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 
@@ -21,6 +28,7 @@ public class MainPresenter extends BasePresenter<MainContract.View>
 
     private CompositeDisposable compositeDisposable;
     private LinksService linksService;
+    private int position;
 
     @Override
     public void attachView(MainContract.View view) {
@@ -56,13 +64,13 @@ public class MainPresenter extends BasePresenter<MainContract.View>
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(list -> {
-                    if (getView() != null) {
+                    if (isViewAttached()) {
                         getView().showProgress(false);
                         getView().showData(list);
                     }
-                }, throwable ->{
+                }, throwable -> {
                     Timber.d(throwable, throwable.getMessage());
-                    if (getView() != null) {
+                    if (isViewAttached()) {
                         getView().showProgress(false);
                         getView().showError();
                     }
@@ -71,7 +79,43 @@ public class MainPresenter extends BasePresenter<MainContract.View>
 
     @Override
     public void loadMusic(List<String> musicsPath) {
+        if (!isViewAttached()) {
+            return;
+        }
 
+        position = 0;
+        compositeDisposable.add(Observable.fromIterable(musicsPath)
+                .flatMapSingle(path -> linksService.getSong(path))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        responseBody -> {
+                            if (isViewAttached()) {
+                                String fileName = "music" + position;
+                                createFile(responseBody, fileName);
+                                getView().showData(fileName, position);
+                                position++;
+                            }
+                        },
+                        throwable -> Timber.e(throwable, throwable.getMessage()),
+                        () -> {
+                            if (isViewAttached()) {
+                                getView().showSuccessLoad();
+                            }
+                        }
+                ));
+    }
+
+    private void createFile(ResponseBody responseBody, String fileName) {
+        File file = new File(getView().getTestPlayerApp().getFilesDir(), fileName);
+        FileOutputStream outputStream;
+        try {
+            outputStream = getView().getTestPlayerApp().openFileOutput(fileName, Context.MODE_PRIVATE);
+            outputStream.write(responseBody.bytes());
+            outputStream.close();
+        } catch (IOException e) {
+            Timber.e(e, e.getMessage());
+        }
     }
 
     @Override
