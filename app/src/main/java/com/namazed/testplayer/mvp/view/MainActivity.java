@@ -1,6 +1,7 @@
 package com.namazed.testplayer.mvp.view;
 
 import android.app.ProgressDialog;
+import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +13,7 @@ import com.namazed.testplayer.mvp.base.BaseActivity;
 import com.namazed.testplayer.mvp.contract.MainContract;
 import com.namazed.testplayer.mvp.presenter.MainPresenter;
 
+import java.io.File;
 import java.util.List;
 
 public class MainActivity
@@ -62,15 +64,24 @@ public class MainActivity
     @Override
     public void showData(List<String> urls) {
         adapter.setData(urls);
+        getPresenter().loadMusic(urls);
     }
 
     @Override
     public void showData(String name, int position) {
-        adapter.setData(name, position);
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        mmr.setDataSource(getApplication().getFilesDir() + File.separator + name);
+        String metaName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        adapter.setData(metaName, position);
     }
 
     @Override
     public void showError() {
         Toast.makeText(this, R.string.msg_error_network, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showSuccessLoad() {
+        Toast.makeText(this, R.string.msg_load_success, Toast.LENGTH_SHORT).show();
     }
 }

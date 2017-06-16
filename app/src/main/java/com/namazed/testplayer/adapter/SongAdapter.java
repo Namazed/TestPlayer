@@ -46,14 +46,15 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     }
 
     public void setData(String name, int position) {
-
+        songsName.set(position, name);
+        notifyItemChanged(position);
     }
 
     class SongViewHolder extends RecyclerView.ViewHolder {
         TextView nameSongTextView;
         ProgressBar loadMusicProgress;
 
-        public SongViewHolder(View itemView) {
+        SongViewHolder(View itemView) {
             super(itemView);
             nameSongTextView = (TextView) itemView.findViewById(R.id.text_name_song);
             loadMusicProgress = (ProgressBar) itemView.findViewById(R.id.progress_load_music);
@@ -64,12 +65,9 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
                 nameSongTextView.setText(name);
                 loadMusicProgress.setVisibility(View.VISIBLE);
             } else {
-
+                nameSongTextView.setText(name);
+                loadMusicProgress.setVisibility(View.INVISIBLE);
             }
-            // needed in future
-//            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-//            mmr.setDataSource(context.getExternalFilesDir(name).getPath());
-//            nameSongTextView.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE));
         }
     }
 }

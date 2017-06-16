@@ -15,6 +15,8 @@ public interface MainContract {
         void showData(String name, int position);
 
         void showError();
+
+        void showSuccessLoad();
     }
 
     interface Presenter extends MvpPresenter<View> {
