@@ -1,17 +1,15 @@
 package com.namazed.testplayer.mvp.presenter;
 
-import android.content.Context;
-
+import com.namazed.testplayer.data.PreferenceDataManager;
 import com.namazed.testplayer.mvp.base.BasePresenter;
 import com.namazed.testplayer.mvp.contract.MainContract;
 import com.namazed.testplayer.network.LinksService;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -26,9 +24,16 @@ import timber.log.Timber;
 public class MainPresenter extends BasePresenter<MainContract.View>
         implements MainContract.Presenter {
 
+    private final PreferenceDataManager preferenceDataManager;
     private CompositeDisposable compositeDisposable;
     private LinksService linksService;
     private int position;
+    private boolean isExists;
+    private LinkedHashSet<String> musicsPaths;
+
+    public MainPresenter(PreferenceDataManager preferenceDataManager) {
+        this.preferenceDataManager = preferenceDataManager;
+    }
 
     @Override
     public void attachView(MainContract.View view) {
@@ -44,6 +49,28 @@ public class MainPresenter extends BasePresenter<MainContract.View>
         }
 
         getView().showProgress(true);
+
+        //проверяем загружена ли уже музыка, если да, то выходим из этого метода.
+        musicsPaths = preferenceDataManager.getMusicsPaths();
+        position = 0;
+        if (musicsPaths != null) {
+            compositeDisposable.add(Observable.fromIterable(musicsPaths)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            path -> {
+                                getView().showInitialData(path, position);
+                                getView().showProgress(false);
+                                position++;
+                            }, throwable -> {
+                                // TODO: 16.06.2017 тут необходимо заменить текст ошибки
+                                getView().showError();
+                                Timber.e(throwable, throwable.getMessage());
+                            }
+                    )
+            );
+            return;
+        }
 
         compositeDisposable.add(linksService.getFileWithUrls()
                 .onErrorResumeNext(throwable -> linksService.getFileWithUrls())
@@ -84,6 +111,8 @@ public class MainPresenter extends BasePresenter<MainContract.View>
         }
 
         position = 0;
+        musicsPaths = new LinkedHashSet<>();
+
         compositeDisposable.add(Observable.fromIterable(musicsPath)
                 .flatMapSingle(path -> linksService.getSong(path))
                 .subscribeOn(Schedulers.io())
@@ -92,8 +121,9 @@ public class MainPresenter extends BasePresenter<MainContract.View>
                         responseBody -> {
                             if (isViewAttached()) {
                                 String fileName = "music" + position;
-                                createFile(responseBody, fileName);
-                                getView().showData(fileName, position);
+                                String path = createFile(responseBody, fileName);
+                                musicsPaths.add(path);
+                                getView().showData(path, position);
                                 position++;
                             }
                         },
@@ -101,21 +131,20 @@ public class MainPresenter extends BasePresenter<MainContract.View>
                         () -> {
                             if (isViewAttached()) {
                                 getView().showSuccessLoad();
+                                preferenceDataManager.setMusicsPaths(musicsPaths);
                             }
                         }
                 ));
     }
 
-    private void createFile(ResponseBody responseBody, String fileName) {
-        File file = new File(getView().getTestPlayerApp().getFilesDir(), fileName);
-        FileOutputStream outputStream;
-        try {
-            outputStream = getView().getTestPlayerApp().openFileOutput(fileName, Context.MODE_PRIVATE);
-            outputStream.write(responseBody.bytes());
-            outputStream.close();
-        } catch (IOException e) {
-            Timber.e(e, e.getMessage());
+    private String createFile(ResponseBody responseBody, String fileName) {
+        if (!isViewAttached()) {
+            return null;
         }
+
+        File file = new File(getView().getTestPlayerApp().getFilesDir(), fileName);
+        getView().writeDataIntoFile(responseBody, fileName);
+        return file.getAbsolutePath();
     }
 
     @Override

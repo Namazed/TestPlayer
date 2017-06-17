@@ -50,6 +50,11 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         notifyItemChanged(position);
     }
 
+    public void setInitialData(String name, int position) {
+        songsName.add(name);
+        notifyItemChanged(position);
+    }
+
     class SongViewHolder extends RecyclerView.ViewHolder {
         TextView nameSongTextView;
         ProgressBar loadMusicProgress;

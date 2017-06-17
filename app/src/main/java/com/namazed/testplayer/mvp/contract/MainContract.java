@@ -5,6 +5,8 @@ import com.namazed.testplayer.mvp.base.MvpView;
 
 import java.util.List;
 
+import okhttp3.ResponseBody;
+
 public interface MainContract {
 
     interface View extends MvpView {
@@ -12,11 +14,15 @@ public interface MainContract {
 
         void showData(List<String> urls);
 
-        void showData(String name, int position);
+        void showData(String musicPath, int position);
 
         void showError();
 
         void showSuccessLoad();
+
+        void showInitialData(String path, int position);
+
+        void writeDataIntoFile(ResponseBody responseBody, String fileName);
     }
 
     interface Presenter extends MvpPresenter<View> {
