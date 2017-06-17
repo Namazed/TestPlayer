@@ -12,7 +12,7 @@ import java.util.LinkedHashSet;
 
 public class DefaultPreferenceDataManager implements PreferenceDataManager {
 
-    private static final String NAMES_KEY = "names";
+    private static final String PATHS_KEY = "paths";
 
     private final SharedPreferences sharedPreferences;
     private final Gson gson;
@@ -27,12 +27,12 @@ public class DefaultPreferenceDataManager implements PreferenceDataManager {
     @Override
     public void setMusicsPaths(LinkedHashSet<String> names) {
         String jsonLinkedSet = gson.toJson(names, type);
-        sharedPreferences.edit().putString(NAMES_KEY, jsonLinkedSet).apply();
+        sharedPreferences.edit().putString(PATHS_KEY, jsonLinkedSet).apply();
     }
 
     @Nullable
     @Override
     public LinkedHashSet<String> getMusicsPaths() {
-        return gson.fromJson(sharedPreferences.getString(NAMES_KEY, null), type);
+        return gson.fromJson(sharedPreferences.getString(PATHS_KEY, null), type);
     }
 }

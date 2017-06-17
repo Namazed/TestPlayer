@@ -1,5 +1,7 @@
 package com.namazed.testplayer.mvp.presenter;
 
+import android.support.v4.util.Pair;
+
 import com.namazed.testplayer.data.PreferenceDataManager;
 import com.namazed.testplayer.mvp.base.BasePresenter;
 import com.namazed.testplayer.mvp.contract.MainContract;
@@ -44,9 +46,7 @@ public class MainPresenter extends BasePresenter<MainContract.View>
 
     @Override
     public void loadUrlsOfMusic() {
-        if (!isViewAttached()) {
-            return;
-        }
+        if (!isViewAttached()) return;
 
         getView().showProgress(true);
 
@@ -54,20 +54,16 @@ public class MainPresenter extends BasePresenter<MainContract.View>
         musicsPaths = preferenceDataManager.getMusicsPaths();
         position = 0;
         if (musicsPaths != null) {
-            compositeDisposable.add(Observable.fromIterable(musicsPaths)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                            path -> {
-                                getView().showInitialData(path, position);
-                                getView().showProgress(false);
-                                position++;
-                            }, throwable -> {
-                                // TODO: 16.06.2017 тут необходимо заменить текст ошибки
-                                getView().showError();
-                                Timber.e(throwable, throwable.getMessage());
-                            }
-                    )
+            compositeDisposable.add(getObservableMusicsPaths(musicsPaths).subscribe(
+                    path -> {
+                        getView().showInitialData(path, position);
+                        getView().showProgress(false);
+                        position++;
+                    }, throwable -> {
+                        // TODO: 16.06.2017 тут необходимо заменить текст ошибки
+                        getView().showError();
+                        Timber.e(throwable, throwable.getMessage());
+                    })
             );
             return;
         }
@@ -106,9 +102,7 @@ public class MainPresenter extends BasePresenter<MainContract.View>
 
     @Override
     public void loadMusic(List<String> musicsPath) {
-        if (!isViewAttached()) {
-            return;
-        }
+        if (!isViewAttached()) return;
 
         position = 0;
         musicsPaths = new LinkedHashSet<>();
@@ -137,14 +131,35 @@ public class MainPresenter extends BasePresenter<MainContract.View>
                 ));
     }
 
-    private String createFile(ResponseBody responseBody, String fileName) {
-        if (!isViewAttached()) {
-            return null;
-        }
+    @Override
+    public void getPathOfMusic(int positionOfMusic) {
+        if (!isViewAttached()) return;
 
-        File file = new File(getView().getTestPlayerApp().getFilesDir(), fileName);
-        getView().writeDataIntoFile(responseBody, fileName);
-        return file.getAbsolutePath();
+        position = 0;
+        if (musicsPaths != null) {
+            compositeDisposable.add(getObservableMusicsPaths(musicsPaths)
+                    .map(path -> {
+                        Pair<String, Integer> pair = new Pair<>(path, position);
+                        position++;
+                        return pair;
+                    })
+                    .subscribe(
+                            pair -> {
+                                if (pair.second == positionOfMusic) {
+                                    getView().playMusic(pair.first);
+                                }
+                            }, throwable -> {
+                                Timber.e(throwable, throwable.getMessage());
+                            }
+                    ));
+        }
+    }
+
+    @Override
+    public void checkDataSource(String dataSourceMusic) {
+        if (isViewAttached() && dataSourceMusic != null) {
+            getView().playMusic(dataSourceMusic);
+        }
     }
 
     @Override
@@ -155,5 +170,19 @@ public class MainPresenter extends BasePresenter<MainContract.View>
             compositeDisposable.clear();
             compositeDisposable = null;
         }
+    }
+
+    private String createFile(ResponseBody responseBody, String fileName) {
+        if (!isViewAttached()) return null;
+
+        File file = new File(getView().getTestPlayerApp().getFilesDir(), fileName);
+        getView().writeDataIntoFile(responseBody, fileName);
+        return file.getAbsolutePath();
+    }
+
+    private Observable<String> getObservableMusicsPaths(LinkedHashSet<String> musicsPaths) {
+        return Observable.fromIterable(musicsPaths)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 }

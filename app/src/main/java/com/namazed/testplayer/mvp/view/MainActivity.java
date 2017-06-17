@@ -2,10 +2,13 @@ package com.namazed.testplayer.mvp.view;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.namazed.testplayer.R;
@@ -29,6 +32,11 @@ public class MainActivity
     private SongAdapter adapter;
     private ProgressDialog progressDialog;
     private final MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+    private MediaPlayer player;
+    private ImageButton playButton;
+    private ImageButton pauseButton;
+    private ImageButton stopButton;
+    private String dataSourceMusic;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +57,17 @@ public class MainActivity
         progressDialog.setCancelable(false);
         progressDialog.setCanceledOnTouchOutside(false);
 
+        playButton = (ImageButton) findViewById(R.id.btn_play);
+        playButton.setOnClickListener(view -> getPresenter().checkDataSource(dataSourceMusic));
+
+        pauseButton = (ImageButton) findViewById(R.id.btn_pause);
+        stopButton = (ImageButton) findViewById(R.id.btn_stop);
+
+        SongAdapter.MusicListener musicListener =
+                positionOfMusic -> getPresenter().getPathOfMusic(positionOfMusic);
         songsRecycler = (RecyclerView) findViewById(R.id.recycler_songs);
         songsRecycler.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new SongAdapter(getApplicationContext());
+        adapter = new SongAdapter(getApplicationContext(), musicListener);
         songsRecycler.setAdapter(adapter);
     }
 
@@ -92,6 +108,34 @@ public class MainActivity
             outputStream = openFileOutput(fileName, Context.MODE_PRIVATE);
             outputStream.write(responseBody.bytes());
             outputStream.close();
+        } catch (IOException e) {
+            Timber.e(e, e.getMessage());
+        }
+    }
+
+    @Override
+    public void playMusic(String pathOfMusic) {
+        try {
+            if (player == null) {
+                //if first start player
+                player = new MediaPlayer();
+            } else if (dataSourceMusic != null && !dataSourceMusic.equals(pathOfMusic)) {
+                //if change track
+                player.stop();
+                player.release();
+                player = new MediaPlayer();
+            } else {
+                //if was clicked pause
+                // TODO: 17.06.2017 обработать паузу
+            }
+            dataSourceMusic = pathOfMusic;
+            player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            player.setDataSource(pathOfMusic);
+            player.prepare();
+            player.start();
+            playButton.setEnabled(false);
+            pauseButton.setEnabled(true);
+            stopButton.setEnabled(true);
         } catch (IOException e) {
             Timber.e(e, e.getMessage());
         }

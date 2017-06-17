@@ -23,11 +23,21 @@ public interface MainContract {
         void showInitialData(String path, int position);
 
         void writeDataIntoFile(ResponseBody responseBody, String fileName);
+
+        void playMusic(String pathOfMusic);
     }
 
     interface Presenter extends MvpPresenter<View> {
         void loadUrlsOfMusic();
 
         void loadMusic(List<String> musicsPath);
+
+        void getPathOfMusic(int positionOfMusic);
+
+        /**
+         * Checking dataSourceMusic on null
+         * @param dataSourceMusic - path of music
+         */
+        void checkDataSource(String dataSourceMusic);
     }
 }

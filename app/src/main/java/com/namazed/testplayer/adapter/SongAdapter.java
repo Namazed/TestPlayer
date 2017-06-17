@@ -17,10 +17,16 @@ import java.util.List;
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder> {
 
     private final Context context;
+    private final MusicListener musicListener;
     private List<String> songsName;
 
-    public SongAdapter(Context context) {
+    public interface MusicListener {
+        void onClickMusic(int positionOfMusic);
+    }
+
+    public SongAdapter(Context context, MusicListener musicListener) {
         this.context = context;
+        this.musicListener = musicListener;
         songsName = new LinkedList<>();
     }
 
@@ -32,7 +38,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
     @Override
     public void onBindViewHolder(SongViewHolder holder, int position) {
-        holder.bind(songsName.get(position));
+        holder.bind(songsName.get(position), position);
     }
 
     @Override
@@ -65,12 +71,13 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             loadMusicProgress = (ProgressBar) itemView.findViewById(R.id.progress_load_music);
         }
 
-        void bind(String name) {
+        void bind(String name, int positionOfMusic) {
             if (name.contains(RetrofitService.BASE_URL)) {
                 nameSongTextView.setText(name);
                 loadMusicProgress.setVisibility(View.VISIBLE);
             } else {
                 nameSongTextView.setText(name);
+                nameSongTextView.setOnClickListener(view -> musicListener.onClickMusic(positionOfMusic));
                 loadMusicProgress.setVisibility(View.INVISIBLE);
             }
         }
