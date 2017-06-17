@@ -7,13 +7,25 @@
     android:orientation="vertical"
     tools:context="com.namazed.testplayer.mvp.view.MainActivity">
 
+
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/recycler_songs"
+        android:id="@+id/recycler_musics"
         android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:id="@+id/text_current_musics_name"
+        android:layout_width="wrap_content"
+        android:gravity="center"
+        android:textStyle="bold|italic"
+        android:layout_gravity="center"
+        tools:text="Music the best"
+        android:layout_margin="@dimen/progress_music_margin"
         android:layout_height="wrap_content"/>
 
     <SeekBar
-        android:id="@+id/seek_progress_song"
+        android:id="@+id/seek_progress_music"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/progress_music_margin"/>

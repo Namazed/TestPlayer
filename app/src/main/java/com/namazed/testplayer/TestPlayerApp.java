@@ -13,6 +13,8 @@ import timber.log.Timber;
 public class TestPlayerApp extends Application {
 
     public final static String PREFERENCES = "testPlayerPrefs";
+    public static final int TIMER_REPEAT = 100;
+
     private RetrofitService retrofitService;
     private LinksService linksService;
     private SharedPreferences sharedPreferences;

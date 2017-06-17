@@ -30,7 +30,6 @@ public class MainPresenter extends BasePresenter<MainContract.View>
     private CompositeDisposable compositeDisposable;
     private LinksService linksService;
     private int position;
-    private boolean isExists;
     private LinkedHashSet<String> musicsPaths;
 
     public MainPresenter(PreferenceDataManager preferenceDataManager) {
@@ -74,15 +73,15 @@ public class MainPresenter extends BasePresenter<MainContract.View>
                     InputStream inputStream = responseBody.byteStream();
                     BufferedReader bufferedReader =
                             new BufferedReader(new InputStreamReader(inputStream));
-                    List<String> songsPath = new LinkedList<>();
+                    List<String> musicsPath = new LinkedList<>();
                     String path;
                     while ((path = bufferedReader.readLine()) != null) {
-                        songsPath.add(path);
+                        musicsPath.add(path);
                     }
                     inputStream.close();
                     bufferedReader.close();
 
-                    return songsPath;
+                    return musicsPath;
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -108,7 +107,7 @@ public class MainPresenter extends BasePresenter<MainContract.View>
         musicsPaths = new LinkedHashSet<>();
 
         compositeDisposable.add(Observable.fromIterable(musicsPath)
-                .flatMapSingle(path -> linksService.getSong(path))
+                .flatMapSingle(path -> linksService.getMusic(path))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -148,17 +147,29 @@ public class MainPresenter extends BasePresenter<MainContract.View>
                                 if (pair.second == positionOfMusic) {
                                     getView().playMusic(pair.first);
                                 }
-                            }, throwable -> {
-                                Timber.e(throwable, throwable.getMessage());
-                            }
+                            }, throwable -> Timber.e(throwable, throwable.getMessage())
                     ));
         }
     }
 
     @Override
-    public void checkDataSource(String dataSourceMusic) {
+    public void onClickPlayMusic(String dataSourceMusic) {
         if (isViewAttached() && dataSourceMusic != null) {
             getView().playMusic(dataSourceMusic);
+        }
+    }
+
+    @Override
+    public void onClickPauseMusic(int currentPositionOfMusic) {
+        if (isViewAttached()) {
+            getView().pauseMusic(currentPositionOfMusic);
+        }
+    }
+
+    @Override
+    public void onClickStopMusic() {
+        if (isViewAttached()) {
+            getView().stopMusic();
         }
     }
 
