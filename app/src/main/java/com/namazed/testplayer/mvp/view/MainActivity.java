@@ -45,6 +45,7 @@ public class MainActivity
     private String dataSourceMusic;
     private SeekBar progressMusicSeekBar;
     private TextView currentMusicsNameTextView;
+    private SeekBar.OnSeekBarChangeListener seekBarChangeListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +59,16 @@ public class MainActivity
         getPresenter().loadUrlsOfMusic();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (progressMusicHandler == null) {
+            progressMusicHandler = new Handler();
+        }
+
+        progressMusicSeekBar.setOnSeekBarChangeListener(seekBarChangeListener);
+    }
+
     private void initViews() {
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(getString(R.string.progress_load_urls));
@@ -68,7 +79,7 @@ public class MainActivity
         currentMusicsNameTextView = (TextView) findViewById(R.id.text_current_musics_name);
 
         progressMusicSeekBar = (SeekBar) findViewById(R.id.seek_progress_music);
-        progressMusicSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
             }
@@ -87,7 +98,7 @@ public class MainActivity
 
                 updateProgressMusic();
             }
-        });
+        };
 
         playButton = (ImageButton) findViewById(R.id.btn_play);
         playButton.setEnabled(false);
