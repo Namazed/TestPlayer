@@ -11,5 +11,5 @@ public interface LinksService {
     Single<ResponseBody> getFileWithUrls();
 
     @GET
-    Single<ResponseBody> getSong(@Url String urlFile);
+    Single<ResponseBody> getMusic(@Url String urlFile);
 }

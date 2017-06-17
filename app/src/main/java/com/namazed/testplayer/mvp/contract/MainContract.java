@@ -23,11 +23,29 @@ public interface MainContract {
         void showInitialData(String path, int position);
 
         void writeDataIntoFile(ResponseBody responseBody, String fileName);
+
+        void playMusic(String pathOfMusic);
+
+        void pauseMusic(int currentPositionOfMusic);
+
+        void stopMusic();
     }
 
     interface Presenter extends MvpPresenter<View> {
         void loadUrlsOfMusic();
 
         void loadMusic(List<String> musicsPath);
+
+        void getPathOfMusic(int positionOfMusic);
+
+        /**
+         * If dataSourceMusic not null then play music
+         * @param dataSourceMusic - path of music
+         */
+        void onClickPlayMusic(String dataSourceMusic);
+
+        void onClickPauseMusic(int currentPositionOfMusic);
+
+        void onClickStopMusic();
     }
 }

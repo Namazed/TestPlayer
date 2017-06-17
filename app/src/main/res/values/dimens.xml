@@ -2,6 +2,6 @@
 <resources>
     <dimen name="progress_music_margin">10dp</dimen>
     <dimen name="btn_controller_music_margin">5dp</dimen>
-    <dimen name="item_song_margin">10dp</dimen>
-    <dimen name="size_text_of_name_song">22sp</dimen>
+    <dimen name="item_music_margin">10dp</dimen>
+    <dimen name="size_text_of_name_music">22sp</dimen>
 </resources>
